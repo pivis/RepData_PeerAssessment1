@@ -7,7 +7,8 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r, echo=TRUE}
+
+```r
 activity_data <- read.csv(
     unz('activity.zip', 'activity.csv'),
     colClasses=c('numeric', 'Date', 'integer'))
@@ -38,7 +39,8 @@ intervals_ticks_labels <- intervals[intervals_ticks_ordinals]
 
 
 ## What is mean total number of steps taken per day?
-```{r, fig.height=4, fig.width=8, echo=TRUE}
+
+```r
 library(ggplot2)
 steps_per_day <- with(activity_data_narm, tapply(steps, date, sum))
 qplot(
@@ -49,18 +51,26 @@ qplot(
     main="Histogram of the total number of steps taken each day")
 ```
 
-```{r, echo=TRUE}
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+
+
+```r
 mean_steps <- mean(steps_per_day)
 median_steps <- median(steps_per_day)
 c(mean_steps, median_steps)
 ```
 
-Mean of the total number of steps taken each day: **`r format(mean_steps)`**
+```
+## [1] 10766.19 10765.00
+```
 
-Median of the total number of steps taken each day: **`r format(median_steps)`**
+Mean of the total number of steps taken each day: **10766.19**
+
+Median of the total number of steps taken each day: **10765**
 
 ## What is the average daily activity pattern?
-```{r, fig.height=4, fig.width=8, echo=TRUE}
+
+```r
 steps_per_interval <- with(activity_data_narm, tapply(steps, intervalOrdinal, mean))
 intervals_df <- data.frame(ordinals=1:288, steps_per_interval=steps_per_interval)
 ggplot(data=intervals_df, aes(ordinals, steps_per_interval)) +
@@ -71,23 +81,36 @@ ggplot(data=intervals_df, aes(ordinals, steps_per_interval)) +
     scale_x_discrete(breaks=intervals_ticks_ordinals, labels=intervals_ticks_labels)
 ```
 
-```{r, echo=TRUE}
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
+
+```r
 max_average_steps_interval <- intervals[steps_per_interval==max(steps_per_interval)][1]
 max_average_steps_interval
 ```
 
-Out of all 5-minute intervals on average the maximum number of steps is contained in the interval **`r max_average_steps_interval`**.
+```
+## [1] 835
+```
+
+Out of all 5-minute intervals on average the maximum number of steps is contained in the interval **835**.
 
 ## Imputing missing values
-```{r, echo=TRUE}
+
+```r
 number_of_missing_values <- sum(is.na(activity_data$steps))
 number_of_missing_values
 ```
-Total number of missing values in the dataset is **`r number_of_missing_values`**.
+
+```
+## [1] 2304
+```
+Total number of missing values in the dataset is **2304**.
 
 We will use rounded mean value of steps for the corresponding interval as a substitute for the missing values.
 
-```{r, fig.height=4, fig.width=8, echo=TRUE}
+
+```r
 activity_data_filled <- transform(activity_data, steps=ifelse(is.na(steps), round(steps_per_interval[intervalOrdinal]), steps))
 steps_per_day_filled <- with(activity_data_filled, tapply(steps, date, sum))
 qplot(
@@ -98,24 +121,32 @@ qplot(
     main="Histogram of the total number of steps after imputing missing values")
 ```
 
-```{r, echo=TRUE}
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
+
+```r
 mean_steps_filled <- mean(steps_per_day_filled)
 median_steps_filled <- median(steps_per_day_filled)
 c(mean_steps_filled, median_steps_filled)
 ```
 
-Mean of the total number of steps taken per day after imputing missing values: **`r format(mean_steps_filled)`**
+```
+## [1] 10765.64 10762.00
+```
 
-Median of the total number of steps taken per day after imputing missing values: **`r format(median_steps_filled)`**
+Mean of the total number of steps taken per day after imputing missing values: **10765.64**
+
+Median of the total number of steps taken per day after imputing missing values: **10762**
 
 As we can see the change in mean and median number of steps taken per day is not very big:
 
-* After imputing missing values mean number of steps per day is changed by **`r format(mean_steps_filled-mean_steps)`**
-* After imputing missing values median number of steps per day is changed by **`r format(median_steps_filled-median_steps)`**
+* After imputing missing values mean number of steps per day is changed by **-0.549335**
+* After imputing missing values median number of steps per day is changed by **-3**
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r, fig.height=8, fig.width=8, echo=TRUE}
+
+```r
 date_weekdays <- weekdays(activity_data_filled$date, abbreviate = TRUE)
 activity_data_filled$daytype <- factor(ifelse(date_weekdays=='Sun' | date_weekdays=='Sat', 2, 1) , labels=c('weekday', 'weekend'))
 
@@ -134,3 +165,5 @@ ggplot(data=intervals_df_full, aes(ordinals, steps_per_interval)) +
     scale_x_discrete(breaks=intervals_ticks_ordinals, labels=intervals_ticks_labels) +
     facet_grid(daytype ~ .)
 ```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
